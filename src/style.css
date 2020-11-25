@@ -21,44 +21,21 @@ ul {
 }
 
 .container {
-    height: 1000px;
     margin: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
+    display: grid;
+    grid-template-rows: 250px 220px 210px;
+    grid-template-columns: 580px 250px;
+    overflow: hidden;
     font-family: 'Open Sans';
-}
-
-h1 {
-    color: #eee;
-    text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.26);
-}
-
-.upper-control {
-    width: 730px;
-    height: 170px;
-    background-color: #eee;
-    padding: 40px;
     border-radius: 5px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
     box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.26);
 }
 
-.upper-control .vertical-line {
-    position: relative;
-    height: 250px;
-    margin-top: -40px;
-    margin-left: -15px;
-    top: 0;
-    border-left: 2px solid #aaa;
-}
-
 .drawbars {
-    width: 500px;
-    height: 100%;
+    grid-row: 1/2;
+    grid-column: 1/2;
+    padding: 40px;
+    background-color: #eee;
 }
 .drawbars ul {
     width: 100%;
@@ -85,10 +62,14 @@ h1 {
 }
 
 .percussion {
-    width: 165px;
+    grid-row: 1/2;
+    grid-column: 2/3;
+    padding: 40px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    background-color: #eee;
+    border-left: 2px solid #777;
 }
 
 .switch {
@@ -148,7 +129,49 @@ h1 {
     color: transparent;
 }
 
+.control {
+    grid-row: 2/3;
+    grid-column: 1/2;
+    padding: 40px 80px;
+    box-sizing: border-box;
+    background-color: #eee;
+    border-top: 2px solid #777;
+}
+.control ul {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.control .spaced {
+    line-height: 14px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.control input[type='range'] {
+    width: 200px;
+}
+
+.title {
+    grid-row: 2/3;
+    grid-column: 2/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #eee;
+    background-color: #777;
+    font-size: 28px;
+    text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.26);
+}
+
 .key-container {
+    grid-row: 3/4;
+    grid-column: 1/3;
+    padding: 5px;
+    background-color: #444;
+}
+.keyboard {
     margin: 0 auto;
     width: 717px;
     min-width: 717px;
@@ -156,46 +179,46 @@ h1 {
     flex-direction: column-reverse;
     touch-action: none;
 }
-.key-container .top-row {
+.keyboard .top-row {
     display: flex;
     position: relative;
     z-index: 2;
 }
-.key-container .top-row .key-group {
+.keyboard .top-row .key-group {
     display: flex;
     justify-content: space-between;
     position: relative;
     top: -200px;
     height: 0;
 }
-.key-container .top-row .key-group.group-of-two {
+.keyboard .top-row .key-group.group-of-two {
     width: 60px;
 }
-.key-container .top-row .key-group.group-of-three {
+.keyboard .top-row .key-group.group-of-three {
     width: 93px;
 }
-.key-container .top-row .key-group.group-0 {
+.keyboard .top-row .key-group.group-0 {
     margin-left: 16px;
 }
-.key-container .top-row .key-group.group-1 {
+.keyboard .top-row .key-group.group-1 {
     margin-left: 39px;
 }
-.key-container .top-row .key-group.group-2 {
+.keyboard .top-row .key-group.group-2 {
     margin-left: 38px;
 }
-.key-container .top-row .key-group.group-3 {
+.keyboard .top-row .key-group.group-3 {
     margin-left: 39px;
 }
-.key-container .top-row .key-group.group-4 {
+.keyboard .top-row .key-group.group-4 {
     margin-left: 38px;
 }
-.key-container .top-row .key-group.group-5 {
+.keyboard .top-row .key-group.group-5 {
     margin-left: 39px;
 }
-.key-container .top-row .key {
+.keyboard .top-row .key {
     margin-top: auto;
 }
-.key-container .bottom-row {
+.keyboard .bottom-row {
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -223,29 +246,6 @@ h1 {
 }
 .bottom-row .key {
     height: 200px;
-}
-
-.lower-control {
-    background-color: #eee;
-    width: 350px;
-    padding: 40px;
-    border-radius: 5px;
-    box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.26);
-}
-
-.lower-control li {
-    margin: 15px 0 15px 0;
-}
-
-.lower-control .spaced {
-    line-height: 14px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.lower-control input[type='range'] {
-    width: 200px;
 }
 
 .github-corner:hover .octo-arm {
