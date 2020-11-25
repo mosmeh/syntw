@@ -47,6 +47,13 @@ export class Synth {
         });
     }
 
+    set keyClickVolume(volume) {
+        this._port.postMessage({
+            type: 'keyClick',
+            volume,
+        });
+    }
+
     setPercussionState({ on, volume, decay, harmonic }) {
         this._port.postMessage({
             type: 'percussion',

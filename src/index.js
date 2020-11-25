@@ -47,6 +47,12 @@ async function setupSynth() {
     }
     synth.drawbars = drawbars;
 
+    const keyClick = document.getElementById('key-click');
+    keyClick.addEventListener('input', () => {
+        synth.keyClickVolume = +keyClick.value;
+    });
+    synth.keyClickVolume = +keyClick.value;
+
     const percState = {};
     [
         ['perc-on', 'on', [true, false]],

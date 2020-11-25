@@ -189,12 +189,29 @@ class ToneGenerator {
     }
 }
 
+class KeyClickGenerator {
+    constructor(volume) {
+        this._volume = 20 * volume;
+        this._envelope = new Envelope(0.001, 0.003, 0, 0.01);
+        this._envelope.noteOn();
+        this._y1 = 0;
+    }
+
+    process() {
+        const CUTOFF = 0.05 * (44100 / sampleRate);
+        const x = (2 * Math.random() - 1) * this._envelope.process();
+        const y = x * CUTOFF + this._y1 * (1 - CUTOFF);
+        this._y1 = y;
+        return this._volume * y;
+    }
+}
+
 class Voice {
-    constructor(note, toneGenerator) {
+    constructor(toneGen, note, keyClickVolume) {
         this.note = note;
         this.down = true;
 
-        this._toneGen = toneGenerator;
+        this._toneGen = toneGen;
         this._tonewheels = new Array(NUM_DRAWBARS);
         for (let i = 0; i < NUM_DRAWBARS; ++i) {
             this._tonewheels[i] =
@@ -203,6 +220,8 @@ class Voice {
 
         this._envelope = new Envelope(0.005, 0, 1, 0.01);
         this._envelope.noteOn();
+
+        this._keyClickGen = new KeyClickGenerator(keyClickVolume);
     }
 
     noteOff() {
@@ -214,9 +233,10 @@ class Voice {
     }
 
     process() {
-        return (
-            this._envelope.process() * this._toneGen.generate(this._tonewheels)
-        );
+        const x =
+            this._toneGen.generate(this._tonewheels) +
+            this._keyClickGen.process();
+        return this._envelope.process() * x;
     }
 }
 
@@ -446,6 +466,7 @@ class Processor extends AudioWorkletProcessor {
         this._voices = [];
         this._sustain = false;
         this._volume = calcVolume(0);
+        this._keyClickVolume = 0.5;
         this._toneGen = new ToneGenerator();
         this._rotarySpeaker = new RotarySpeaker();
 
@@ -463,6 +484,9 @@ class Processor extends AudioWorkletProcessor {
                     this._toneGen.percussionHarmonic = harmonic;
                     break;
                 }
+                case 'keyClick':
+                    this._keyClickVolume = data.volume;
+                    break;
                 case 'rotarySpeaker': {
                     const { on, speed } = data;
                     this._rotarySpeaker.on = on;
@@ -476,7 +500,11 @@ class Processor extends AudioWorkletProcessor {
                             this._toneGen.triggerPercussion();
                         }
 
-                        const newVoice = new Voice(note, this._toneGen);
+                        const newVoice = new Voice(
+                            this._toneGen,
+                            note,
+                            this._keyClickVolume
+                        );
                         const i = this._voices.findIndex(
                             (voice) => voice.note === note
                         );
