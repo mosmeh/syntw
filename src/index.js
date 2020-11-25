@@ -47,14 +47,29 @@ async function setupSynth() {
     }
     synth.drawbars = drawbars;
 
+    const percState = {};
+    [
+        ['perc-on', 'on', [true, false]],
+        ['perc-vol', 'volume', ['soft', 'hard']],
+        ['perc-dcy', 'decay', ['fast', 'slow']],
+        ['perc-har', 'harmonic', ['3rd', '2nd']],
+    ].forEach(([id, param, [on, off]]) => {
+        const checkbox = document.getElementById(id);
+        checkbox.addEventListener('change', () => {
+            percState[param] = checkbox.checked ? on : off;
+            synth.setPercussionState(percState);
+        });
+        percState[param] = checkbox.checked ? on : off;
+    });
+    synth.setPercussionState(percState);
+
     const rotaryOn = document.getElementById('rotary-on');
     const rotarySpeed = document.getElementById('rotary-speed');
     function updateRotaryState() {
-        if (rotaryOn.checked) {
-            synth.rotarySpeed = +rotarySpeed.value;
-        } else {
-            synth.rotarySpeed = null;
-        }
+        synth.setRotaryState({
+            on: rotaryOn.checked,
+            speed: +rotarySpeed.value,
+        });
     }
     rotaryOn.addEventListener('input', updateRotaryState);
     rotarySpeed.addEventListener('input', updateRotaryState);

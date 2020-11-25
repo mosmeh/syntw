@@ -5,58 +5,16 @@ const NUM_TONEWHEELS = HIGHEST_TW_NOTE - LOWEST_TW_NOTE + 1; // 79
 const NUM_DRAWBARS = 9;
 const HARM_OFFSETS = [-12, 7, 0, 12, 19, 24, 28, 31, 36];
 
-class ToneGenerator {
-    constructor() {
-        this._phases = new Float32Array(NUM_TONEWHEELS);
-        this._deltas = new Float32Array(NUM_TONEWHEELS);
-        for (let i = 0; i < NUM_TONEWHEELS; ++i) {
-            this._phases[i] = Math.random();
-            this._deltas[i] = mtof(i + LOWEST_TW_NOTE) / sampleRate;
-        }
-
-        this._harmVolumes = new Float32Array(NUM_DRAWBARS).fill(1);
-
-        this._sine = new Float32Array(16384);
-        for (let i = 0; i < this._sine.length; ++i) {
-            this._sine[i] = Math.sin((TAU * i) / this._sine.length);
-        }
-    }
-
-    set drawbars(value) {
-        for (let i = 0; i < NUM_DRAWBARS; ++i) {
-            this._harmVolumes[i] =
-                value[i] === 0 ? 0 : Math.pow(10, (3 * (value[i] - 8)) / 20);
-        }
-    }
-
-    generate(tonewheels) {
-        let sum = 0;
-        for (let i = 0; i < NUM_DRAWBARS; ++i) {
-            if (this._harmVolumes[i] > 0) {
-                const idx =
-                    (this._phases[tonewheels[i]] * this._sine.length) &
-                    (this._sine.length - 1);
-                sum += this._harmVolumes[i] * this._sine[idx];
-            }
-        }
-
-        return sum / NUM_DRAWBARS;
-    }
-
-    process() {
-        for (let i = 0; i < NUM_TONEWHEELS; ++i) {
-            this._phases[i] += this._deltas[i];
-            if (this._phases[i] >= 1) {
-                this._phases[i] -= 1;
-            }
-        }
-    }
-}
+const DRAWBAR_VOLUME_SOFT = 1;
+const DRAWBAR_VOLUME_NORM = 0.7;
+const PERC_VOLUME_SOFT = 2;
+const PERC_VOLUME_NORM = 4;
+const PERC_KEYSCALE_FACTOR = 0.25;
 
 class Envelope {
     constructor(attack, decay, sustain, release) {
         this._value = 0;
-        this._state = 'attack';
+        this._state = 'idle';
         this._attackRate = 1 / (attack * sampleRate);
         this._decayRate = (1 - sustain) / (decay * sampleRate);
         this._sustain = sustain;
@@ -64,8 +22,18 @@ class Envelope {
         this._releaseRate = sustain / (release * sampleRate);
     }
 
+    set decay(value) {
+        this._decayRate = (1 - this._sustain) / (value * sampleRate);
+    }
+
+    noteOn() {
+        this._state = 'attack';
+        this._value = 0;
+    }
+
     noteOff() {
         switch (this._state) {
+            case 'idle':
             case 'attack':
             case 'decay':
             case 'sustain':
@@ -75,8 +43,12 @@ class Envelope {
         }
     }
 
+    get value() {
+        return this._value;
+    }
+
     get active() {
-        return this._state !== 'idle';
+        return this._state !== 'finished';
     }
 
     process() {
@@ -107,12 +79,113 @@ class Envelope {
                 this._value -= this._releaseRate;
                 if (this._value <= 0) {
                     this._value = 0;
-                    this._state = 'idle';
+                    this._state = 'finished';
                 }
                 break;
         }
 
         return this._value;
+    }
+}
+
+class ToneGenerator {
+    constructor() {
+        this._phases = new Float32Array(NUM_TONEWHEELS);
+        this._deltas = new Float32Array(NUM_TONEWHEELS);
+        for (let i = 0; i < NUM_TONEWHEELS; ++i) {
+            this._phases[i] = Math.random();
+            this._deltas[i] = mtof(i + LOWEST_TW_NOTE) / sampleRate;
+        }
+
+        this._sinTable = new Float32Array(16384);
+        for (let i = 0; i < this._sinTable.length; ++i) {
+            this._sinTable[i] = Math.sin((TAU * i) / this._sinTable.length);
+        }
+
+        this._drawbarVolume = DRAWBAR_VOLUME_SOFT;
+        this._harmVolumes = new Float32Array(NUM_DRAWBARS).fill(1);
+
+        this._percOn = true;
+        this._percVolume = PERC_VOLUME_SOFT;
+        this._percHarm = 4;
+        this._percEnv = new Envelope(0.001, 0.14, 0, 0.01);
+    }
+
+    set drawbars(value) {
+        for (let i = 0; i < NUM_DRAWBARS; ++i) {
+            this._harmVolumes[i] =
+                value[i] === 0 ? 0 : Math.pow(10, (3 * (value[i] - 8)) / 20);
+        }
+    }
+
+    set percussionOn(on) {
+        if (!this._percOn && on) {
+            this.triggerPercussion();
+        }
+        this._percOn = on;
+    }
+
+    set percussionVolume(volume) {
+        if (volume === 'soft') {
+            this._drawbarVolume = DRAWBAR_VOLUME_SOFT;
+            this._percVolume = PERC_VOLUME_SOFT;
+        } else {
+            this._drawbarVolume = DRAWBAR_VOLUME_NORM;
+            this._percVolume = PERC_VOLUME_NORM;
+        }
+    }
+
+    set percussionDecay(decay) {
+        this._percEnv.decay = decay === 'fast' ? 0.14 : 0.4;
+    }
+
+    set percussionHarmonic(harm) {
+        this._percHarm = harm === '2nd' ? 3 : 4;
+    }
+
+    triggerPercussion() {
+        this._percEnv.noteOn();
+    }
+
+    generate(tonewheels) {
+        let sum = 0;
+        const n = this._percOn ? NUM_DRAWBARS - 1 : NUM_DRAWBARS;
+        for (let i = 0; i < n; ++i) {
+            if (this._harmVolumes[i] > 0) {
+                sum +=
+                    this._harmVolumes[i] * this._readTonewheel(tonewheels[i]);
+            }
+        }
+        sum *= this._drawbarVolume;
+
+        if (this._percOn && this._percEnv.active) {
+            const tw = tonewheels[this._percHarm];
+            const keyScaling = (tw - LOWEST_TW_NOTE) / NUM_TONEWHEELS;
+            sum +=
+                this._percVolume *
+                this._percEnv.value *
+                (1 - keyScaling * PERC_KEYSCALE_FACTOR) *
+                this._readTonewheel(tw);
+        }
+
+        return sum;
+    }
+
+    process() {
+        for (let i = 0; i < NUM_TONEWHEELS; ++i) {
+            this._phases[i] += this._deltas[i];
+            if (this._phases[i] >= 1) {
+                this._phases[i] -= 1;
+            }
+        }
+        this._percEnv.process();
+    }
+
+    _readTonewheel(tonewheel) {
+        const phase = this._phases[tonewheel];
+        const idx =
+            (phase * this._sinTable.length) & (this._sinTable.length - 1);
+        return this._sinTable[idx];
     }
 }
 
@@ -129,6 +202,7 @@ class Voice {
         }
 
         this._envelope = new Envelope(0.005, 0, 1, 0.01);
+        this._envelope.noteOn();
     }
 
     noteOff() {
@@ -372,23 +446,37 @@ class Processor extends AudioWorkletProcessor {
         this._voices = [];
         this._sustain = false;
         this._volume = calcVolume(0);
-        this._toneGenerator = new ToneGenerator();
+        this._toneGen = new ToneGenerator();
         this._rotarySpeaker = new RotarySpeaker();
 
         this.port.onmessage = (msg) => {
             const { data } = msg;
             switch (data.type) {
                 case 'drawbars':
-                    this._toneGenerator.drawbars = data.drawbars;
+                    this._toneGen.drawbars = data.drawbars;
                     break;
-                case 'rotarySpeaker':
-                    this._rotarySpeaker.on = data.on;
-                    this._rotarySpeaker.speed = data.speed;
+                case 'percussion': {
+                    const { on, volume, decay, harmonic } = data;
+                    this._toneGen.percussionOn = on;
+                    this._toneGen.percussionVolume = volume;
+                    this._toneGen.percussionDecay = decay;
+                    this._toneGen.percussionHarmonic = harmonic;
                     break;
-                case 'noteOn':
+                }
+                case 'rotarySpeaker': {
+                    const { on, speed } = data;
+                    this._rotarySpeaker.on = on;
+                    this._rotarySpeaker.speed = speed;
+                    break;
+                }
+                case 'noteOn': {
                     const { note } = data;
                     if (36 <= note && note <= 96) {
-                        const newVoice = new Voice(note, this._toneGenerator);
+                        if (this._voices.length === 0) {
+                            this._toneGen.triggerPercussion();
+                        }
+
+                        const newVoice = new Voice(note, this._toneGen);
                         const i = this._voices.findIndex(
                             (voice) => voice.note === note
                         );
@@ -400,6 +488,7 @@ class Processor extends AudioWorkletProcessor {
                         }
                     }
                     break;
+                }
                 case 'noteOff':
                     this._voices.forEach((voice) => {
                         if (voice.note === data.note && voice.down) {
@@ -439,7 +528,7 @@ class Processor extends AudioWorkletProcessor {
             outputs[1][0][i] = y[2];
             outputs[1][1][i] = y[3];
 
-            this._toneGenerator.process();
+            this._toneGen.process();
         }
 
         return true;
@@ -463,5 +552,5 @@ function foldback(note) {
 }
 
 function calcVolume(numVoices) {
-    return Math.pow(10, (-0.2 * numVoices) / 20);
+    return Math.pow(10, (-18 - 0.2 * numVoices) / 20);
 }

@@ -11,126 +11,171 @@
     <body>
         <div class="container">
             <h1>syntw</h1>
-            <div class="drawbars">
-                <ul>
-                    <li>
-                        <label>
-                            16'
-                            <input
-                                id="drawbar-0"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="8"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            5 1/3'
-                            <input
-                                id="drawbar-1"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="8"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            8'
-                            <input
-                                id="drawbar-2"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="8"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            4'
-                            <input
-                                id="drawbar-3"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="0"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            2 2/3'
-                            <input
-                                id="drawbar-4"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="0"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            2'
-                            <input
-                                id="drawbar-5"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="0"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            1 3/5'
-                            <input
-                                id="drawbar-6"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="0"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            1 1/3'
-                            <input
-                                id="drawbar-7"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="0"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            1'
-                            <input
-                                id="drawbar-8"
-                                type="range"
-                                min="0"
-                                max="8"
-                                value="0"
-                                step="1"
-                            />
-                        </label>
-                    </li>
-                </ul>
+            <div class="upper-control">
+                <div class="drawbars">
+                    <ul>
+                        <li>
+                            <label>
+                                16'
+                                <input
+                                    id="drawbar-0"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="8"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                5 1/3'
+                                <input
+                                    id="drawbar-1"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="8"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                8'
+                                <input
+                                    id="drawbar-2"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="8"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                4'
+                                <input
+                                    id="drawbar-3"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="0"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                2 2/3'
+                                <input
+                                    id="drawbar-4"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="0"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                2'
+                                <input
+                                    id="drawbar-5"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="0"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                1 3/5'
+                                <input
+                                    id="drawbar-6"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="0"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                1 1/3'
+                                <input
+                                    id="drawbar-7"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="0"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                1'
+                                <input
+                                    id="drawbar-8"
+                                    type="range"
+                                    min="0"
+                                    max="8"
+                                    value="0"
+                                    step="1"
+                                />
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+                <span class="vertical-line"></span>
+                <div class="percussion">
+                    <label class="switch">
+                        PERC
+                        <span class="input">
+                            <input id="perc-on" type="checkbox" checked />
+                            <span class="slider highlight">
+                                <span class="on">On</span>
+                                <span class="off">Off</span>
+                            </span>
+                        </span>
+                    </label>
+                    <label class="switch">
+                        VOL
+                        <span class="input">
+                            <input id="perc-vol" type="checkbox" checked />
+                            <span class="slider">
+                                <span class="on">Soft</span>
+                                <span class="off">Norm</span>
+                            </span>
+                        </span>
+                    </label>
+                    <label class="switch">
+                        DCY
+                        <span class="input">
+                            <input id="perc-dcy" type="checkbox" checked />
+                            <span class="slider">
+                                <span class="on">Fast</span>
+                                <span class="off">Slow</span>
+                            </span>
+                        </span>
+                    </label>
+                    <label class="switch">
+                        HAR
+                        <span class="input">
+                            <input id="perc-har" type="checkbox" checked />
+                            <span class="slider">
+                                <span class="on">3rd</span>
+                                <span class="off">2nd</span>
+                            </span>
+                        </span>
+                    </label>
+                </div>
             </div>
             <div class="key-container">
                 <div class="top-row">
@@ -187,7 +232,7 @@
                     <div class="key" data-note="84"></div>
                 </div>
             </div>
-            <div class="control">
+            <div class="lower-control">
                 <ul>
                     <li>
                         <label class="spaced">

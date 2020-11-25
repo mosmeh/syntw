@@ -47,11 +47,21 @@ export class Synth {
         });
     }
 
-    set rotarySpeed(value) {
+    setPercussionState({ on, volume, decay, harmonic }) {
+        this._port.postMessage({
+            type: 'percussion',
+            on,
+            volume,
+            decay,
+            harmonic,
+        });
+    }
+
+    setRotaryState({ on, speed }) {
         this._port.postMessage({
             type: 'rotarySpeaker',
-            on: value !== null,
-            speed: value,
+            on,
+            speed,
         });
     }
 
