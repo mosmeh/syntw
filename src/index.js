@@ -55,12 +55,12 @@ async function setupSynth() {
 
     const percState = {};
     [
-        ['perc-on', 'on', [true, false]],
-        ['perc-vol', 'volume', ['soft', 'hard']],
-        ['perc-dcy', 'decay', ['fast', 'slow']],
-        ['perc-har', 'harmonic', ['3rd', '2nd']],
-    ].forEach(([id, param, [on, off]]) => {
-        const checkbox = document.getElementById(id);
+        ['on', [true, false]],
+        ['volume', ['soft', 'normal']],
+        ['decay', ['fast', 'slow']],
+        ['harmonic', ['third', 'second']],
+    ].forEach(([param, [on, off]]) => {
+        const checkbox = document.getElementById(`percussion-${param}`);
         checkbox.addEventListener('change', () => {
             percState[param] = checkbox.checked ? on : off;
             synth.setPercussionState(percState);

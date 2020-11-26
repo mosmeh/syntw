@@ -6,9 +6,9 @@ const NUM_DRAWBARS = 9;
 const HARM_OFFSETS = [-12, 7, 0, 12, 19, 24, 28, 31, 36];
 
 const DRAWBAR_VOLUME_SOFT = 1;
-const DRAWBAR_VOLUME_NORM = 0.7;
+const DRAWBAR_VOLUME_NORMAL = 0.7;
 const PERC_VOLUME_SOFT = 2;
-const PERC_VOLUME_NORM = 4;
+const PERC_VOLUME_NORMAL = 4;
 const PERC_KEYSCALE_FACTOR = 0.25;
 
 class Envelope {
@@ -102,11 +102,10 @@ class ToneGenerator {
             this._sinTable[i] = Math.sin((TAU * i) / this._sinTable.length);
         }
 
-        this._drawbarVolume = DRAWBAR_VOLUME_SOFT;
         this._harmVolumes = new Float32Array(NUM_DRAWBARS).fill(1);
 
         this._percOn = true;
-        this._percVolume = PERC_VOLUME_SOFT;
+        this._percVolume = 'soft';
         this._percHarm = 4;
         this._percEnv = new Envelope(0.001, 0.14, 0, 0.01);
     }
@@ -126,13 +125,7 @@ class ToneGenerator {
     }
 
     set percussionVolume(volume) {
-        if (volume === 'soft') {
-            this._drawbarVolume = DRAWBAR_VOLUME_SOFT;
-            this._percVolume = PERC_VOLUME_SOFT;
-        } else {
-            this._drawbarVolume = DRAWBAR_VOLUME_NORM;
-            this._percVolume = PERC_VOLUME_NORM;
-        }
+        this._percVolume = volume;
     }
 
     set percussionDecay(decay) {
@@ -140,7 +133,7 @@ class ToneGenerator {
     }
 
     set percussionHarmonic(harm) {
-        this._percHarm = harm === '2nd' ? 3 : 4;
+        this._percHarm = harm === 'second' ? 3 : 4;
     }
 
     triggerPercussion() {
@@ -148,6 +141,13 @@ class ToneGenerator {
     }
 
     generate(tonewheels) {
+        let drawbarGain = DRAWBAR_VOLUME_SOFT;
+        let percGain = PERC_VOLUME_SOFT;
+        if (this._percOn && this._percVolume === 'normal') {
+            drawbarGain = DRAWBAR_VOLUME_NORMAL;
+            percGain = PERC_VOLUME_NORMAL;
+        }
+
         let sum = 0;
         const n = this._percOn ? NUM_DRAWBARS - 1 : NUM_DRAWBARS;
         for (let i = 0; i < n; ++i) {
@@ -156,13 +156,13 @@ class ToneGenerator {
                     this._harmVolumes[i] * this._readTonewheel(tonewheels[i]);
             }
         }
-        sum *= this._drawbarVolume;
+        sum *= drawbarGain;
 
         if (this._percOn && this._percEnv.active) {
             const tw = tonewheels[this._percHarm];
             const keyScaling = (tw - LOWEST_TW_NOTE) / NUM_TONEWHEELS;
             sum +=
-                this._percVolume *
+                percGain *
                 this._percEnv.value *
                 (1 - keyScaling * PERC_KEYSCALE_FACTOR) *
                 this._readTonewheel(tw);

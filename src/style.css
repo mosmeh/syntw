@@ -24,7 +24,7 @@ ul {
     margin: auto;
     display: grid;
     grid-template-rows: 250px 220px 210px;
-    grid-template-columns: 580px 250px;
+    grid-template-columns: 580px 290px;
     overflow: hidden;
     font-family: 'Open Sans';
     border-radius: 5px;
